@@ -21,7 +21,7 @@ function tambah_data() {
         var input_alamat = document.getElementById("alamat").value;
 
         //cek apakah nilai sudah diinput di form
-        if (nama !== "" && alamat !== "") {
+        if (input_nama !== "" && input_alamat !== "") {
             //Insert data yang diisi pada form, tanda ? hanya sebagai placeholder, akan digantikan dengan data array pada parameter kedua
             mydb.transaction(function (t) {
                 t.executeSql("INSERT INTO person (nama, alamat) VALUES (?, ?)", [input_nama, input_alamat]);
@@ -37,7 +37,7 @@ function tambah_data() {
 //function untuk menampilkan data ke tabel di index.html
 function update_list(transaction, results) {
     //inisialisasi variabel item untuk menampung data dari database
-    var listitems = "";
+    // var listitems = "";
     //mendapatkan nilai dari komponen list_data
     var listholder = document.getElementById("list_data");
 
@@ -50,7 +50,13 @@ function update_list(transaction, results) {
         //mendapatkan data pada row ke i
         var row = results.rows.item(i);
 
-        listholder.innerHTML += "<tr><td>" + row.nama + "</td><td>" + row.alamat + " </td> <td> <a href='javascript:void(0);' onclick='hapus_data(" + row.id + ");'>Hapus</a> </td> </tr>";
+        listholder.innerHTML += 
+          `<tr>
+            <td>${row.nama}</td>
+            <td>${row.alamat}</td> 
+            <td><a href='javascript:void(0);' onclick='edit(${row.id});'>Update</a> | 
+            <a href='javascript:void(0);' onclick='hapus_data(${row.id});'>Hapus</a> </td> 
+          </tr>`;
     }
 
 }
@@ -76,6 +82,68 @@ function hapus_data(id) {
         mydb.transaction(function (t) {
             t.executeSql("DELETE FROM person WHERE id=?", [id], show_data);
         });
+    } else {
+        alert("database tidak ditemukan, browser tidak support web sql!");
+    }
+}
+
+// function ambil data dari tabel dan memasukkan ke data ke form yg akan diedit
+function edit(id){
+    //cek apakah objek mydb sudah dibuat
+    if (mydb) {
+        //menghapus data dari database berdasarkan parameter, set show_data sebagai callback function di dalam executeSql 
+        mydb.transaction(function (t) {
+            //mendapatkan nilai dari komponen list_data
+            var formholder = document.getElementById("form_data");
+
+            //clear list di tabel
+            formholder.innerHTML = "";
+
+            t.executeSql("SELECT * FROM person where id=?", [id], function (tx, results){
+
+              formholder.innerHTML = 
+                `<form>
+                  <input type="hidden" id="id_edit" value="${id}">
+                  <div class="form-group">
+                    <label>Nama</label>
+                    <input type="text" class="form-control" id="nama_edit" value="${results.rows.item(0).nama}">
+                  </div>
+                  <div class="form-group">
+                    <label>Alamat</label>
+                    <input type="text" class="form-control" id="alamat_edit" value="${results.rows.item(0).alamat}">
+                  </div>
+                  <div class="form-group">
+                    <button type="submit" class="btn btn-info" onclick="update_data();">Update</button>
+                    <button type="submit" class="btn btn-default" onclick="location.reload();">Batal</button>
+                  </div>
+                </form>`;
+
+            });
+        });
+    } else {
+        alert("database tidak ditemukan, browser tidak support web sql!");
+    }
+    
+}
+
+//function to menginput data ke database
+function update_data() {
+    //cek apakah objek mydb sudah dibuat
+    if (mydb) {
+        //mendapatkan nilai dari form
+        var edit_id = document.getElementById("id_edit").value;
+        var edit_nama = document.getElementById("nama_edit").value;
+        var edit_alamat = document.getElementById("alamat_edit").value;
+
+        //cek apakah nilai sudah diinput di form
+        if (edit_nama !== "" && edit_alamat !== "") {
+            //Insert data yang diisi pada form, tanda ? hanya sebagai placeholder, akan digantikan dengan data array pada parameter kedua
+            mydb.transaction(function (t) {
+                t.executeSql("UPDATE person SET nama=?, alamat=? WHERE id=?", [edit_nama, edit_alamat, edit_id]);
+            });
+        } else {
+            alert("nama dan alamat harus diisi!");
+        }
     } else {
         alert("database tidak ditemukan, browser tidak support web sql!");
     }
