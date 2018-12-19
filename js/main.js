@@ -91,7 +91,6 @@ function hapus_data(id) {
 function edit(id){
     //cek apakah objek mydb sudah dibuat
     if (mydb) {
-        //menghapus data dari database berdasarkan parameter, set show_data sebagai callback function di dalam executeSql 
         mydb.transaction(function (t) {
             //mendapatkan nilai dari komponen list_data
             var formholder = document.getElementById("form_data");
@@ -99,6 +98,7 @@ function edit(id){
             //clear list di tabel
             formholder.innerHTML = "";
 
+            // mengambil data berdasarkan id dan menampilkannya
             t.executeSql("SELECT * FROM person where id=?", [id], function (tx, results){
 
               formholder.innerHTML = 
@@ -126,18 +126,18 @@ function edit(id){
     
 }
 
-//function to menginput data ke database
+//function to mengupdate data ke database
 function update_data() {
     //cek apakah objek mydb sudah dibuat
     if (mydb) {
-        //mendapatkan nilai dari form
+        //mendapatkan nilai dari form yang akan diedit
         var edit_id = document.getElementById("id_edit").value;
         var edit_nama = document.getElementById("nama_edit").value;
         var edit_alamat = document.getElementById("alamat_edit").value;
 
-        //cek apakah nilai sudah diinput di form
+        //cek apakah nilai sudah diinput/diedit di form
         if (edit_nama !== "" && edit_alamat !== "") {
-            //Insert data yang diisi pada form, tanda ? hanya sebagai placeholder, akan digantikan dengan data array pada parameter kedua
+            //update data yang diisi pada form, tanda ? hanya sebagai placeholder, akan digantikan dengan data array pada parameter kedua
             mydb.transaction(function (t) {
                 t.executeSql("UPDATE person SET nama=?, alamat=? WHERE id=?", [edit_nama, edit_alamat, edit_id]);
             });
